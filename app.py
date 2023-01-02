@@ -9,7 +9,7 @@ import datetime
 # To find excel files
 
 # Set page configuration
-st.set_page_config(layout="wide", page_title="JCPAINTING", page_icon="bar_chart")
+st.set_page_config(layout="wide", page_title="JC", page_icon="bar_chart")
 st.title("New Project")
 
 # Read data from Excel file
