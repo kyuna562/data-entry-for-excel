@@ -13,7 +13,7 @@ import pyautogui
 
 
 # Set page configuration
-st.set_page_config(layout="wide", page_title="JCPAINTING", page_icon="bar_chart")
+st.set_page_config(layout="wide", page_title="JC", page_icon="bar_chart")
 st.title("Update Accounting")
 
 
