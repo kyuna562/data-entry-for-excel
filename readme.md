@@ -1,6 +1,6 @@
 # JC
 
-* This is a web application built using Python and the Streamlit library, designed to help a small painting company manage their projects and accounting. 
+* This is a web application built using Python and the Streamlit library, designed to help a small company manage their projects and accounting. 
 
 Features
 - Add new projects and input customer information, materials, and scope of work
