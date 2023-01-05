@@ -52,8 +52,8 @@ options_form = st.sidebar.form("options_form")
 date = str(datetime.date.today()) # current date
 deposit =options_form.text_input("Deposit")
 worker = options_form.multiselect("Select workers",["Elliott","Jake","Braden","Mason","Ryan","Scott ","Chris ","Caleb ","Garrett"])
-material =options_form.text_input("Material Cost")
-other =options_form.text_input("Other Cost")
+material =options_form.text_input("Description of Material Cost")
+other =options_form.text_input("Description of Other Cost")
 money =int(options_form.number_input("$IN/OUT",value=0))
 add_data = options_form.form_submit_button()
 
