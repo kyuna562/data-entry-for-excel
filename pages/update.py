@@ -48,7 +48,7 @@ st.table(df)
 
 # Create options form in sidebar
 st.sidebar.header("Options")
-options_form = st.sidebar.form("options_form")
+options_form = st.sidebar.form("options_form",clear_on_submit=True)
 date = str(datetime.date.today()) # current date
 deposit =options_form.text_input("Deposit")
 worker = options_form.multiselect("Select workers",["Elliott","Jake","Braden","Mason","Ryan","Scott ","Chris ","Caleb ","Garrett"])
@@ -56,10 +56,6 @@ material =options_form.text_input("Description of Material Cost")
 other =options_form.text_input("Description of Other Cost")
 money =int(options_form.number_input("$IN/OUT",value=0))
 add_data = options_form.form_submit_button()
-
-# Add reset button to form
-if options_form.form_submit_button("Reset"):
-    pyautogui.hotkey("ctrl","F5")
 
 
 # Convert worker list to string
@@ -151,3 +147,7 @@ with col4:
 with pd.ExcelWriter(newdf) as writer:
     df.to_excel(writer, sheet_name="jc" , index=False)
     df1.to_excel(writer, sheet_name="accounting" , index=False)
+  
+# Add reset button to refresh the charts
+if st.button("Reset Charts"):
+    pyautogui.hotkey("r")
