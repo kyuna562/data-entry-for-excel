@@ -22,7 +22,7 @@ st.table(df)
 
 # Create options form in sidebar
 st.sidebar.header("Options")
-options_form = st.sidebar.form("options_form")
+options_form = st.sidebar.form("options_form",clear_on_submit=True)
 date = str(datetime.date.today()) # current date
 customer = options_form.text_input("Customer Name")
 phone_number = options_form.text_input("Phone Number")
