@@ -10,6 +10,8 @@ import datetime
 import os
 # For reset button
 import pyautogui
+# Saving page data
+import pickle
 
 
 # Set page configuration
@@ -35,12 +37,10 @@ res.remove("jc.xlsx")
 latest = len(res) - 1
 newdf = st.selectbox("Select the Project", res, index=latest)
 
-# newdf = st.selectbox("Select the Project",options = res)
-
 
 # Read data from selected file
-df = pd.read_excel(newdf,sheet_name =0)
-df1 = pd.read_excel(newdf,sheet_name =1)
+df = pd.read_excel(newdf, sheet_name=0)
+df1 = pd.read_excel(newdf, sheet_name=1)
 
 
 # Display data in table
@@ -48,20 +48,20 @@ st.table(df)
 
 # Create options form in sidebar
 st.sidebar.header("Options")
-options_form = st.sidebar.form("options_form",clear_on_submit=True)
-date = str(datetime.date.today()) # current date
-deposit =options_form.text_input("Deposit")
-worker = options_form.multiselect("Select workers",["Elliott","Jake","Braden","Mason","Ryan","Scott ","Chris ","Caleb ","Garrett"])
-material =options_form.text_input("Description of Material Cost")
-other =options_form.text_input("Description of Other Cost")
-money =int(options_form.number_input("$IN/OUT",value=0))
+options_form = st.sidebar.form("options_form", clear_on_submit=True)
+date = str(datetime.date.today())  # current date
+deposit = options_form.text_input("Deposit")
+worker = options_form.multiselect("Select workers", [
+                                  "Elliott", "Jake", "Branden", "Mason", "Ryan", "Scott ", "Chris ", "Caleb ", "Garrett"])
+material = options_form.text_input("Description of Material Cost")
+other = options_form.text_input("Description of Other Cost")
+money = int(options_form.number_input("$IN/OUT", value=0))
 add_data = options_form.form_submit_button()
 
 
-# Convert worker list to string
-worker=str(worker)
-worker = worker.replace("[","")
-worker = worker.replace("]","")
+# Convert worker list to string and unpacking it
+worker = str(*worker)
+
 
 # Add data to dataframe when form is submitted
 if add_data:
@@ -143,11 +143,12 @@ with col3:
 with col4:
     st.plotly_chart(fig3, use_container_width=True)
 
+
 # Use ExcelWriter to save changes to file
 with pd.ExcelWriter(newdf) as writer:
-    df.to_excel(writer, sheet_name="jc" , index=False)
-    df1.to_excel(writer, sheet_name="accounting" , index=False)
-  
-# Add reset button to refresh the charts
+    df.to_excel(writer, sheet_name="jc", index=False)
+    df1.to_excel(writer, sheet_name="accounting", index=False)
+
+# Add reset button to form
 if st.button("Reset Charts"):
     pyautogui.hotkey("r")
