@@ -31,9 +31,17 @@ for file in os.listdir(dir_path):
 # removing main file
 res.remove("jc.xlsx")
 
-# Select the most recent project file
-latest = len(res) - 1
+# selection and current file
+with open('text.txt', 'r') as r:
+    if os.stat('text.txt').st_size == 0:
+        latest = 0
+    else:
+        latest = r.read()
+        latest = res.index(latest)
 newdf = st.selectbox("Select the Project", res, index=latest)
+if newdf:
+    with open('text.txt', 'w') as text_file:
+        text_file.write(newdf)
 
 
 # Read data from selected file
@@ -57,7 +65,7 @@ income = int(options_form.number_input("INCOME", value=0))
 expense = int(options_form.number_input("EXPENSE", value=0))
 add_data = options_form.form_submit_button()
 
-
+# Data cleaning and making metrics
 worker = str(worker).replace("[", "").replace("]", "")
 total_income = df1["Income/Debit"].sum() + income
 total_expense = df1['Expense/Credit'].sum() + expense
@@ -78,7 +86,7 @@ if add_data and net_income:
         "Expense/Credit": expense,
         "Balance": net_income,
     }
-    df1 = df1.append(new_data, ignore_index=True)
+    df1 = pd.concat([df1, pd.DataFrame([new_data])], ignore_index=True)
 
 # Add undo button
 if st.button("Undo Last Update"):

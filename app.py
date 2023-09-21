@@ -47,7 +47,7 @@ if add_data:
         "Scope of Work": scope,
         "Workers": worker,
     }
-    df = df.append(new_data, ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
 
     file_name = (
         f"JC_{df.iloc[0, 1]}_{df.iloc[0, 2]}_{df.iloc[0, 3]}_{df.iloc[0, 4]}")

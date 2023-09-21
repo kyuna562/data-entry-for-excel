@@ -1,4 +1,4 @@
 @echo off
-cd C:\Users\kyun\Desktop\jc entry form\jc
+cd C:\Users\
 streamlit run app.py
 pause
