@@ -10,21 +10,16 @@ import streamlit as st
 # current date
 import datetime
 
-
-# List of worker names
 worker_list = ["Elliott", "Jake", "Branden", "Mason",
                "Ryan", "Scott ", "Chris ", "Caleb ", "Garrett"]
+
+color_map = {"Cash":"#ffffff","Materials":"#b491ff","Labor":"#82afff", "Equipment":"#78dfb9","Overhead/Other":"#ffb6de"}
 
 
 # Function to set up the Streamlit page's basic attributes
 def set_page_config():
     st.set_page_config(layout="wide", page_title="PEW", page_icon="bar_chart")
     st.title("Accounting")
-
-
-# Function to read data from two sheets of an Excel file
-def read_file(file_name):
-    return pd.read_excel(file_name, sheet_name=0), pd.read_excel(file_name, sheet_name=1)
 
 
 # Function to add new accounting data to a DataFrame
@@ -40,27 +35,6 @@ def add_new_data(df, date, types, description, worker, income, expense, net_inco
     }
     return pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
 
-
-# Function to retrieve a list of Excel files in the directory, excluding 'pew.xlsx'
-def excel_list():
-    return [file for file in os.listdir(os.getcwd()) if file.endswith('.xlsx') and file != "pew.xlsx"]
-
-
-# Function to get the index of the current working Excel file
-def current_index(res):
-    with open('text.txt', 'r') as r:
-        content = r.read()
-        if content in res:
-            latest = res.index(content)
-        else:
-            latest = 0
-    return latest
-
-
-# Saving selected excel file to .txt
-def save_excel_name(file_name):
-    with open('text.txt', 'w') as text_file:
-        text_file.write(file_name)
 
 
 # Metric and other utility calculations
@@ -83,12 +57,17 @@ def profit_margin(net_income, total_income):
     profit_margin = round((net_income / total_income) *100) if total_income != 0 else 0
     return profit_margin
 
-# Aggregating the data
+# Aggregating the data("See the summary")
 def group_expense(df1):
     return df1.groupby('Type')[["Income/Debit","Expense/Credit"]].sum()
 
-# Compute the total sum for each 'Date' in df1
-def group_date(df1,fig2):
+# Bar chart showing expenses over time
+def fig2_bar_chart(df1):
+    fig2 = px.bar(df1, x="Date", y="Expense/Credit", color='Type',
+                    color_discrete_map=color_map, 
+                    title="Expenses Over Time", text='Type', hover_data='Description', hover_name="Worker")
+    
+    # Summarize the total amount by day
     dft = df1.groupby('Date')[["Income/Debit","Expense/Credit"]].sum()
     fig2.add_trace(go.Scatter(
     x=dft.index, 
@@ -97,16 +76,56 @@ def group_date(df1,fig2):
     mode='text',
     textposition='top center'))
 
+    # For 1m/6m/YTD/all button
+    fig2.update_xaxes(
+        #rangeslider_visible=True,
+        rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=1, label="YTD", step="year", stepmode="todate"),
+            dict(step="all")
+            ])))
+    return fig2
+
+
+
+
+# Function to retrieve a list of Excel files in the directory, excluding 'pew.xlsx'
+def excel_list():
+    return [file for file in os.listdir(os.getcwd()) if file.endswith('.xlsx') and file != "pew.xlsx"]
+
+# Function to get the index of the current working Excel file
+def current_index(res):
+    with open('text.txt', 'r') as r:
+        content = r.read()
+        if content in res:
+            latest = res.index(content)
+        else:
+            latest = 0
+    return latest
+
 # Creating a session state for file_names
 new_list = excel_list()
 if 'new_index' not in st.session_state:
     st.session_state['new_index'] = current_index(new_list)
+
+# Function to read data from two sheets of an Excel file
+def read_file(file_name):
+    return pd.read_excel(file_name, sheet_name=0), pd.read_excel(file_name, sheet_name=1)
 
 
 def file_names(new_list):
     file_name = st.selectbox("Select the Project",  new_list,
                              index=st.session_state['new_index'])
     return file_name
+
+# Saving selected excel file to .txt
+def save_excel_name(file_name):
+    with open('text.txt', 'w') as text_file:
+        text_file.write(file_name)
+
+
 
 
 # Use ExcelWriter to save changes to excel file
@@ -119,7 +138,7 @@ def xls_writer(df, df1, file_name):
 def create_and_display_charts(df1): 
     if len(df1) != 0: # Only run if df1 is not empty
         # Pie chart for expense types
-        fig = px.pie(df1, values='Expense/Credit', names=df1['Type'],color='Type', color_discrete_map={"Cash":"white","Materials":"#1616A7","Labor":"#00B5F7","Other":"#FB00D1"},
+        fig = px.pie(df1, values='Expense/Credit', names=df1['Type'],color='Type', color_discrete_map=color_map,
                     labels='Type', title="Expenses Type")
         fig.update_traces(textposition='inside', textinfo='percent+label')
 
@@ -127,20 +146,14 @@ def create_and_display_charts(df1):
         fig1 = px.bar(df1,
                     x="Worker",
                     y="Expense/Credit",
-                    color="Expense/Credit",
+                    #color="Expense/Credit",
                     hover_name="Date",
                     title="Labor Expense")
 
-        # Bar chart showing expenses over time
-        fig2 = px.bar(df1, x="Date", y="Expense/Credit", color='Type',
-                    color_discrete_map={"Cash":"white","Materials":"#1616A7","Labor":"#00B5F7","Other":"#FB00D1"}, title="Expenses Over Time", text='Type', hover_data='Description', hover_name="Worker")
-        
-        # Compute the total sum for each 'Date' in df1
-        group_date(df1,fig2)
     
         # Displaying charts and metrics on Streamlit
         col1, col2, col3 = st.columns((1, 1, 1))
-
+    
         with col1:
             st.plotly_chart(fig, use_container_width=True)
         with col2:
@@ -154,8 +167,9 @@ def create_and_display_charts(df1):
                 f" # Profit Margin {profit_margin(net_income(total_income(df1),total_expense(df1)), total_income(df1))}%")
             with st.expander("See the summary"):
                 st.table(group_expense(df1))
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2_bar_chart(df1), use_container_width=True)
 
+ 
 # Function to get the dictionary of data_editor() session state "editable_df" and update the values into df1
 def update_df_with_data(df1, dic):
     for df_row, values in dic:
@@ -174,12 +188,11 @@ def main():
     if file_name:
         save_excel_name(file_name)
         # Update the session state to the currently selected Excel file when the 'file_name' is chosen
-        if st.session_state['new_index'] != new_list.index(file_name):
-            st.session_state['new_index'] = current_index(file_name)
+        # if st.session_state['new_index'] != new_list.index(file_name):
+        #     st.session_state['new_index'] = current_index(file_name)
 
     df, df1 = read_file(file_name)
-   
-
+    
     # Display first excel sheet in table
     st.table(df)
 
@@ -187,18 +200,21 @@ def main():
     options_form = st.sidebar.form("options_form", clear_on_submit=True)
     date = pd.Timestamp(datetime.date.today())
     types = options_form.selectbox(
-        "Pick one", ("Cash", "Materials", "Labor", "Other"))
-    description = options_form.text_input("Description")
-    worker = str(options_form.multiselect("Select workers", worker_list)).replace(
+        "Pick one 📑", ("Cash", "Materials", "Labor", "Equipment", "Overhead/Other"))
+    description = options_form.text_input("Description 🖹")
+    worker = str(options_form.multiselect("Select workers 👷🏻", worker_list)).replace(
         "[", "").replace("]", "").replace("'", "") 
     income = options_form.number_input(
-        "INCOME", value=0,)
-    expense = options_form.number_input(
-        "EXPENSE", value=0)
+        "Transaction value 💲", value=None, format="%d", min_value=0)
     add_data = options_form.form_submit_button()
 
     # Add data to dataframe when form is submitted
     if add_data:
+        expense = 0
+        if types !="Cash":
+            expense,income = income,0
+        
+
         df1 = add_new_data(df1, date, types, description,
                            worker, income, expense, net_income=(total_income(df1) + income) - (total_expense(df1) + expense))
 
@@ -210,17 +226,16 @@ def main():
     # Drop specific rows
     drop_row = st.number_input(label='Delete Specific Row',
                                min_value=0,  # don't have negative row indices
-                               max_value=df1['Date'].idxmax(),  # prevent out-of-range indices , else default value is 0
-                               value=0,  # Default value
+                               max_value=len(df1) - 1 if len(df1) > 1 else 0,  # prevent out-of-range indices , else default value is 0
+                               value=None,  # Default value
                                format="%d")  # input is treated as an integer
-    if  drop_row != 0:
+    if  drop_row != None:
         df1.drop(drop_row, inplace=True)
         st.success(f'Row {drop_row} deleted successfully!')
 
 
     # Creating data_editor and "editable_df" session state
     st.data_editor(df1, use_container_width=True, key="editable_df")
-    
     
 
 
@@ -240,6 +255,7 @@ def main():
         xls_writer(df, df1, file_name)
 
 
+        
    
 
 if __name__ == "__main__":

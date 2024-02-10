@@ -1,10 +1,5 @@
-# pip install openpyxl
 import pandas as pd
-# the bar charts
-import plotly.express as px
-# web interface
 import streamlit as st
-# current date
 import datetime
 
 # List of worker names

@@ -1,5 +1,4 @@
 pandas==1.5.3
 plotly==5.14.0
-PyAutoGUI==0.9.53
-streamlit==1.20.0
+streamlit==1.29.0
 openpyxl==3.1.2
